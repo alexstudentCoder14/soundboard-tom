@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="en">
+
+  <head>
+    <meta charset="UTF-8">
+    <title>Soundboard</title>
+    <link rel="stylesheet" href="./style.css">
+
+  </head>
+    
+  <body>
+  <html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Soundboard</title>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-database-compat.js"></script>
+</head>
+
+<body>
+
+  <!-- =========================
+       LOGIN / SIGN UP
+  ========================== -->
+
+  <section id="authScreen" class="auth-screen">
+
+    <div class="auth-card">
+
+      <div class="logo">
+        <span>♫</span>
+      </div>
+
+      <h1>Soundboard</h1>
+
+      <p class="subtitle">
+        Your sounds. Your board. Anywhere.
+      </p>
+
+      <div class="auth-tabs">
+
+        <button
+          id="loginTab"
+          class="auth-tab active"
+          type="button"
+        >
+          Login
+        </button>
+
+        <button
+          id="signupTab"
+          class="auth-tab"
+          type="button"
+        >
+          Create Account
+        </button>
+
+      </div>
+
+      <form id="authForm">
+
+        <div class="field">
+
+          <label for="email">
+            Email
+          </label>
+
+          <input
+            id="email"
+            type="email"
+            placeholder="you@example.com"
+            autocomplete="email"
+            required
+          >
+
+        </div>
+
+        <div class="field">
+
+          <label for="password">
+            Password
+          </label>
+
+          <input
+            id="password"
+            type="password"
+            placeholder="At least 6 characters"
+            autocomplete="current-password"
+            minlength="6"
+            required
+          >
+
+        </div>
+
+        <button
+          id="authSubmit"
+          class="main-button"
+          type="submit"
+        >
+          Login
+        </button>
+
+      </form>
+
+      <div
+        id="authMessage"
+        class="auth-message"
+      ></div>
+
+      <div
+        id="firebaseStatus"
+        class="firebase-status"
+      >
+        Connecting to Firebase...
+      </div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =========================
+       MAIN APP
+  ========================== -->
+
+  <div
+    id="app"
+    class="app hidden"
+  >
+
+    <header class="topbar">
+
+      <div class="brand-area">
+
+        <div class="mini-logo">
+          ♫
+        </div>
+
+        <div>
+
+          <h2>Soundboard</h2>
+
+          <span id="userEmail">
+            Loading...
+          </span>
+
+        </div>
+
+      </div>
+
+      <div class="top-actions">
+
+        <button
+          id="stopAll"
+          class="stop-all-button"
+          type="button"
+        >
+          ■ Stop All
+        </button>
+
+        <button
+          id="logout"
+          class="logout-button"
+          type="button"
+        >
+          Logout
+        </button>
+
+      </div>
+
+    </header>
+
+
+    <main class="content">
+
+      <section class="board-heading">
+
+        <div>
+
+          <h1>My Soundboard</h1>
+
+          <p id="soundCount">
+            0 sounds
+          </p>
+
+        </div>
+
+        <label
+          for="fileInput"
+          class="upload-button"
+        >
+          <span>＋ Add Sounds</span>
+
+          <input
+            id="fileInput"
+            type="file"
+            accept="audio/*"
+            multiple
+            hidden
+          >
+
+        </label>
+
+      </section>
+
+
+      <div class="toolbar">
+
+        <div class="search-box">
+
+          <span>⌕</span>
+
+          <input
+            id="searchInput"
+            type="search"
+            placeholder="Search sounds..."
+            autocomplete="off"
+          >
+
+        </div>
+
+        <div class="keyboard-hint">
+          Press <strong>1–9</strong> to play
+        </div>
+
+      </div>
+
+
+      <div
+        id="uploadPanel"
+        class="upload-panel hidden"
+      >
+
+        <div class="upload-spinner"></div>
+
+        <div>
+
+          <strong id="uploadTitle">
+            Uploading...
+          </strong>
+
+          <span id="uploadText">
+            Preparing sound...
+          </span>
+
+        </div>
+
+      </div>
+
+
+      <section
+        id="soundboard"
+        class="soundboard"
+      ></section>
+
+
+      <section
+        id="emptyState"
+        class="empty-state"
+      >
+
+        <div class="empty-icon">
+          ♫
+        </div>
+
+        <h2>No sounds yet</h2>
+
+        <p>
+          Upload your first sound to start building your board.
+        </p>
+
+        <label
+          for="emptyFileInput"
+          class="empty-upload-button"
+        >
+          Add your first sound
+
+          <input
+            id="emptyFileInput"
+            type="file"
+            accept="audio/*"
+            multiple
+            hidden
+          >
+
+        </label>
+
+      </section>
+
+    </main>
+
+  </div>
+
+
+  <!-- =========================
+       EDIT MODAL
+  ========================== -->
+
+  <div
+    id="editModal"
+    class="modal hidden"
+  >
+
+    <div class="modal-card">
+
+      <div class="modal-header">
+
+        <h2>Edit Sound</h2>
+
+        <button
+          id="closeEdit"
+          class="close-button"
+          type="button"
+        >
+          ×
+        </button>
+
+      </div>
+
+      <label for="editName">
+        Sound name
+      </label>
+
+      <input
+        id="editName"
+        type="text"
+        maxlength="80"
+        placeholder="Sound name"
+      >
+
+      <label for="editVolume">
+        Default volume
+      </label>
+
+      <div class="volume-edit">
+
+        <input
+          id="editVolume"
+          type="range"
+          min="0"
+          max="100"
+          value="100"
+        >
+
+        <span id="editVolumeValue">
+          100%
+        </span>
+
+      </div>
+
+      <div class="modal-actions">
+
+        <button
+          id="cancelEdit"
+          class="secondary-button"
+          type="button"
+        >
+          Cancel
+        </button>
+
+        <button
+          id="saveEdit"
+          class="main-button small"
+          type="button"
+        >
+          Save Changes
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- =========================
+       DELETE MODAL
+  ========================== -->
+
+  <div
+    id="deleteModal"
+    class="modal hidden"
+  >
+
+    <div class="modal-card">
+
+      <div class="modal-header">
+
+        <h2>Delete Sound?</h2>
+
+        <button
+          id="closeDelete"
+          class="close-button"
+          type="button"
+        >
+          ×
+        </button>
+
+      </div>
+
+      <p class="delete-text">
+        This will permanently remove
+        <strong id="deleteName"></strong>
+        from your soundboard.
+      </p>
+
+      <div class="modal-actions">
+
+        <button
+          id="cancelDelete"
+          class="secondary-button"
+          type="button"
+        >
+          Cancel
+        </button>
+
+        <button
+          id="confirmDelete"
+          class="danger-button"
+          type="button"
+        >
+          Delete Sound
+        </button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <div
+    id="toast"
+    class="toast"
+  ></div>
+
+</body>
+</html>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js'></script><script  src="./script.js"></script>
+
+  </body>
+  
+</html>
